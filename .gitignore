@@ -1,0 +1,10 @@
+.vs
+packages
+release
+stroke
+test_graph
+x64
+*.aps
+*.rc
+*.vcxproj.user
+*.obj
