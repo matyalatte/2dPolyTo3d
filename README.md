@@ -7,6 +7,7 @@ Generates a 3D model from a 2d polygon<br>
 ## 概要
 任意の多角形から3Dモデルを生成するデモです。<br>
 マウスで図形を描くと3Dモデルが生成されます。<br>
+windows用の実行ファイルが[こちら](https://github.com/matyalatte/2dPolyTo3d/releases)からダウンロードできます。
 
 以下の論文を参考にしました。<br>
 [五十嵐 健夫, 松岡 聡, 田中 英彦 (1999). 手書きスケッチによるモデリングシステム Teddy](https://www-ui.is.s.u-tokyo.ac.jp/~takeo/papers/siggraph99-j.pdf)<br>
