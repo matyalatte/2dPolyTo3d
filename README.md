@@ -13,7 +13,10 @@ windows用の実行ファイルが[こちら](https://github.com/matyalatte/2dPo
 [五十嵐 健夫, 松岡 聡, 田中 英彦 (1999). 手書きスケッチによるモデリングシステム Teddy](https://www-ui.is.s.u-tokyo.ac.jp/~takeo/papers/siggraph99-j.pdf)<br>
 [Takeo Igarashi, Satoshi Matsuoka, Hidehiko Tanaka. "Teddy:
 A Sketching Interface for 3D Freeform Design”,
-ACM SIGGRAPH 99, 1999. ](https://www-ui.is.s.u-tokyo.ac.jp/~takeo/papers/siggraph99.pdf)
+ACM SIGGRAPH 99, 1999. ](https://www-ui.is.s.u-tokyo.ac.jp/~takeo/papers/siggraph99.pdf)<br>
+<br>
+また、以下のページでアルゴリズムを解説しています。よろしければこちらもご覧ください。<br>
+[手描きの丸から良い感じの3Dモデルを生成する](https://matyalatte.github.io/memo/rakugaki)
 
 ## 操作方法
 
@@ -21,7 +24,7 @@ ACM SIGGRAPH 99, 1999. ](https://www-ui.is.s.u-tokyo.ac.jp/~takeo/papers/siggrap
 - 右マウスボタン：クリックでメニューを開く。
 - ホイールボタン：ドラッグで3Dモデルが回転する。（ただし、重心中心ではなく原点中心の回転）
 
-その他、キーボード操作で使用できる機能もいくつかあります。(自分用に作った機能なので、不要なものばかりだと思いますが。）<br>
+その他、キーボード操作で使用できる機能がいくつかあります。(自分用に作った機能なので、不要なものばかりだと思いますが。）<br>
 詳細は[こちら](https://github.com/matyalatte/2dPolyTo3d/wiki/%E3%82%AD%E3%83%BC%E3%83%9C%E3%83%BC%E3%83%89%E6%93%8D%E4%BD%9C%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6)
 
 ## メニュー
