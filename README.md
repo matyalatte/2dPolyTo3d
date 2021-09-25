@@ -31,7 +31,7 @@ ACM SIGGRAPH 99, 1999. ](https://www-ui.is.s.u-tokyo.ac.jp/~takeo/papers/siggrap
 右クリックで表示されるメニューの説明です。<br>
 ![menu](https://user-images.githubusercontent.com/69258547/133288791-9f3e3b54-ecc4-4fd4-b0c3-bb4a2adcb07e.png)
 - Export as .obj: 生成された3Dモデルを.obj形式で出力します。
-- Export as .stroke: 3Dモデルの生成に用いた多角形を独自形式で出力します。
+- Export as .stroke: 3Dモデルの生成に用いた多角形を[独自形式](https://github.com/matyalatte/2dPolyTo3d/wiki/.stroke%E5%BD%A2%E5%BC%8F%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6)で出力します。
 - Import as .stroke: .stroke形式で保存された多角形から3Dモデルを生成します。
 - Show/Hide Normal: 頂点法線ベクトルを表示/非表示します。
 - Show/Hide 2D Polygon: ボーン推定終了時の頂点、辺、ボーンを表示/非表示します。
