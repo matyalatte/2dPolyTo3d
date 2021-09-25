@@ -5,9 +5,8 @@
  *
  * See modeler.cpp for implementation of each member.
  *
- * @author Matyalatte
- * @version 2021/09/13
- * - initial commit
+ * Author: Matyalatte
+ * Last updated: 2021/09/25
  */
 
 #pragma once
@@ -27,7 +26,7 @@ namespace sketch3D {
 	private:
 		size_t faceNum;
 		std::vector<size_t> faces;
-		void graphToModel();
+		void calZ(size_t outer_pnum);
 		void mirrorZ(size_t outer_pnum);
 
 	public:

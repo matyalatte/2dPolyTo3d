@@ -7,5 +7,6 @@ x64
 *.obj
 release
 stroke
+screenshot
 test_graph
 media

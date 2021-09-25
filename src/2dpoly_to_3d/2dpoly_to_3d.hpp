@@ -4,9 +4,8 @@
  * 
  * See 2dpoly_to_3d.cpp for implementation of each member.
  * 
- * @author Matyalatte
- * @version 2021/09/14
- * - initial commit
+ * Author: Matyalatte
+ * Last updated: 2021/09/25
  */
 
 #pragma once
@@ -26,11 +25,13 @@ namespace sketch3D {
 
 		size_t inputPointNum;// the number of vertices in 2D polygon
 
-		double* points2D;
-		double* edges;// edge coordinates of 2D polygon
+		double* points2D[5];
+		double* edges[5];// edge coordinates of 2D polygon
+		double* spines[2];
 
-		size_t point2DNum;//the number of vertices in 2D polygon
-		size_t edgeNum;//the number of edges in 2D polygon
+		size_t point2DNum[5];//the number of vertices in 2D polygon
+		size_t edgeNum[5];//the number of edges in 2D polygon
+		size_t spineNum[2];
 
 		double* points3D;//vertex coordinates of 3D model
 		size_t* faces;//face indices of 3D model
@@ -39,7 +40,7 @@ namespace sketch3D {
 		size_t point3DNum;//the number of vertices in 3D model
 
 		//store 2d graph data
-		void store2DPolyData();
+		void store2DPolyData(size_t id);
 
 		//store 3D model data
 		void storeModelData();
@@ -53,15 +54,15 @@ namespace sketch3D {
 		void genModel(double* point_coords, size_t pointNum);
 
 		//get spine data
-		size_t getSpineNum();//get the number of spines
-		void getSpinesAsCoords(double* spine_coords);// get spine coordinates
-		int getSpineType(size_t i);
+		void storeSpineData(size_t id);
+		size_t getSpineNum(size_t id);//get the number of spines
+		double* getPointerToSpines(size_t id);// get spine coordinates
 
 		//gets 2D polygon data
-		double* getPointerToPoints2D();
-		size_t getPoint2DNum();
-		double* getPointerToEdges();
-		size_t getEdgeNum();
+		double* getPointerToPoints2D(size_t id);
+		size_t getPoint2DNum(size_t id);
+		double* getPointerToEdges(size_t id);
+		size_t getEdgeNum(size_t id);
 
 		//gets model datas
 		double* getPointerToPoints3D();

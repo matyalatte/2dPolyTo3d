@@ -5,9 +5,8 @@
  *
  * See modeler.hpp for documentation of each member.
  *
- * @author Matyalatte
- * @version 2021/09/14
- * - initial commit
+ * Author: Matyalatte
+ * Last updated: 2021/09/25
  */
 
 #include "modeler.hpp"
@@ -44,7 +43,42 @@ namespace sketch3D {
 		return new graph::point(pbx+vecx*sin_half_pi, pby+vecy*sin_half_pi, b*sin_half_pi);
 	}
 
+	void modeler::calZ(size_t outer_pnum) {
+		graph::edge* e;
+		graph::point* p1 = nullptr, * p2 = nullptr, * mid;
+		size_t p1id, p2id;
+		size_t edgeNum = getEdgeNum();
+		size_t pointNum = getPointNum();
+		size_t spinePointNum = pointNum - outer_pnum;
+		double* z = new double[spinePointNum];
+		int* count = new int[spinePointNum];
+		for (size_t i = 0; i < spinePointNum; i++) {
+			z[i] = 0.0;
+			count[i] = 0;
+		}
+
+		for (size_t i = 0; i < edgeNum; i++) {
+			e = getEdge(i);
+			p1 = e->getP1();
+			p2 = e->getP2();
+			p1id = p1->getID();
+			p2id = p2->getID();
+			if (p1id >= outer_pnum && p2id < outer_pnum) {
+				z[p1id - outer_pnum] += e->len();
+				count[p1id - outer_pnum] += 1;
+			}
+		}
+		for (size_t i = 0; i < spinePointNum; i++) {
+			p1 = getPoint(i+outer_pnum);
+			p1->setZ(z[i]/(double)count[i]);
+		}
+
+		delete[] z;
+		delete[] count;
+	}
+
 	void modeler::smoothing(size_t outer_pnum) {
+		calZ(outer_pnum);
 		size_t point_size = getPointNum();
 		graph::edge* e;
 		graph::point* p1=nullptr, * p2= nullptr, * mid;
@@ -63,18 +97,6 @@ namespace sketch3D {
 			}
 			
 		}
-	}
-
-	void modeler::graphToModel() {
-		faceNum = calFaceNum();
-		size_t* face_IDs = new size_t[faceNum*3];
-		getFaces(face_IDs);
-		faces.resize(faceNum*3);
-		for (size_t i = 0; i < faceNum * 3; i++) {
-			faces[i] = face_IDs[i];
-		}
-		//faces = std::vector<size_t>(face_IDs, face_IDs+(int)(faceNum*3));
-		delete[] face_IDs;
 	}
 
 	void modeler::mirrorZ(size_t outer_pnum) {
@@ -164,7 +186,16 @@ namespace sketch3D {
 
 
 	void modeler::graphTo3D(size_t outer_pnum) {
-		graphToModel();
+		faceNum = calFaceNum();
+		size_t* face_IDs = new size_t[faceNum * 3];
+		getFaces(face_IDs);
+		faces.resize(faceNum * 3);
+		for (size_t i = 0; i < faceNum * 3; i++) {
+			faces[i] = face_IDs[i];
+		}
+		//faces = std::vector<size_t>(face_IDs, face_IDs+(int)(faceNum*3));
+		delete[] face_IDs;
+
 		mirrorZ(outer_pnum);
 	}
 }

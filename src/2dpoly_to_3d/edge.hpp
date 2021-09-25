@@ -5,9 +5,8 @@
  *
  * See edge.cpp for implementation of each member.
  *
- * @author Matyalatte
- * @version 2021/09/14
- * - initial commit
+ * Author: Matyalatte
+ * Last updated: 2021/09/25
  */
 
 #pragma once
@@ -66,8 +65,8 @@ namespace graph {
 		void setFlag(bool f);
 		bool getFlag();
 		void disconnectPair();//sets NULL to pairE
-		point* getMidPoint(bool calZ=false);//gets the mid point of the edge
-		point* getCenterPoint(bool calZ=false);//gets the center point of the face with the edge
+		point* getMidPoint();//gets the mid point of the edge
+		point* getCenterPoint();//gets the center point of the face with the edge
 		void printIDs();
 	};
 	void makeEdgePair(edge* e1, edge* e2);

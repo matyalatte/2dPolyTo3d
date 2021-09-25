@@ -1,9 +1,8 @@
 /*
  * File: spineEstimator.hpp
  * --------------------
- * @author Matyalatte
- * @version 2021/09/14
- * - initial commit
+ * Author: Matyalatte
+ * Last updated: 2021/09/25
  */
 
 #pragma once
@@ -27,17 +26,14 @@ namespace sketch3D {
 		void resetSpineFlag();
 		void deleteSpineFlagIsTrue();
 
-		//delete external edges
-		void deleteExternalEdge();
-
 		//generate spines
-		void genSpineFromChordalAxis(graph::edge* e, graph::point* p = nullptr, spine* s = nullptr);
+		void genSpineFromChordalAxisRec(graph::edge* e, graph::point* p = nullptr, spine* s = nullptr);
 		
 		//generate fan triangles
 		void genFanTriangle(graph::point* p1, graph::point* p2, graph::point* center, size_t pnum, graph::edge* se_prev, graph::edge* se_next);
 
 		//recursive function to generate fan triangles
-		void genFanTriangleRec(graph::edge* e, std::vector<graph::point*>& pvec, spine* s, spine* preS=nullptr);
+		void genFanTriangleRec(graph::edge* e, std::vector<graph::point*>& pvec, spine* s, spine* preS=nullptr, bool end=false);
 
 		//find terminal spine to generate fan triangles
 		void searchSpineToGenFan();
@@ -45,16 +41,23 @@ namespace sketch3D {
 		//delete unused points
 		void deleteUnusedPoint();
 
-		//split faces by spine
-		void splitFaceBySpine();
+		
 	public:
 		spineEstimator(graph::graph* graph);
 		~spineEstimator();
 
 		void init() override;
 
+		//delete external edges
+		void deleteExternalEdge();
+
+		void genSpineFromChordalAxis();
+
 		//estimate spines and split faces by spines
-		void estimateSpine();
+		void cutSpine();
+		
+		//split faces by spine
+		void splitFaceBySpine();
 
 		//get the coordinates of spines
 		void getSpinesAsCoords(double* spine_coords);
@@ -67,6 +70,8 @@ namespace sketch3D {
 
 		//get spines[i].type;
 		int getSpineType(size_t i);
+
+		
 	};
 
 

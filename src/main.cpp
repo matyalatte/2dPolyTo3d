@@ -5,9 +5,8 @@
  * This program is a demo application of 2Dpoly_to_3D
  * You can generate a 3D model by drawing a 2D polygon
  * 
- * @author Matyalatte
- * @version 2021/09/14
- * - initial commit
+ * Author: Matyalatte
+ * Last updated: 2021/09/25
  */
 
 #include "openglHandler.hpp"
@@ -82,11 +81,6 @@ size_t spineNum;
 
 //send model data to opengl handler and get spine data
 void setModel() {
-	spineNum = polyTo3D.getSpineNum();
-	delete[] spines;
-	spines = new double[spineNum * 4];
-	polyTo3D.getSpinesAsCoords(spines);
-
 	GL_handler.setModel(
 		polyTo3D.getPointerToPoints3D(),
 		polyTo3D.getPointerToFaces(),
@@ -209,6 +203,10 @@ void exit() {
 	GL_handler.exit();
 }
 
+size_t show2DMode=4;
+bool showSpine = true;
+bool showConst = false;
+bool darkMode = true;
 void redisp(int value) {
 	moveTimer = (moveTimer - 1)*(int)(moveTimer>0);
 	if (isRedisp || writeMode==2){
@@ -228,6 +226,26 @@ void redisp(int value) {
 		if (GetKeyState('R') & 0x8000) {//push R
 			GL_handler.resetModelRotation();
 		}
+		if (GetAsyncKeyState('C') & 1) {
+			darkMode = !darkMode;
+		}
+		if (GetAsyncKeyState('T') & 1) {
+			GL_handler.takeScreenShot();
+		}
+		if (writeMode == 2) {
+			if (GetAsyncKeyState('Z') & 1) {
+				show2DMode = (show2DMode + 1) % 5;
+			}
+			if (GetAsyncKeyState('X') & 1) {
+				showSpine = !showSpine;
+			}
+			if (GetAsyncKeyState('V') & 1) {
+				showConst = !showConst;
+			}
+			
+		}
+
+
 		glutPostRedisplay();
 		isRedisp = GL_FALSE;
 	};
@@ -250,7 +268,7 @@ void disp(void) {
 	height = glutGet(GLUT_WINDOW_HEIGHT);
 
 	//clear buffer
-	glClearColor(0, 0, 0, 0);
+	glClearColor(!darkMode, !darkMode, !darkMode, 0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	if (writeMode == 1) {
@@ -272,31 +290,37 @@ void disp(void) {
 		}
 
 		if (show2DPoly) {
-			//draw spines
-			glLineWidth(6);
-			glBegin(GL_LINES);
-			int type;
-			for (size_t i = 0; i < polyTo3D.getSpineNum(); i++) {
-				type = polyTo3D.getSpineType(i);
-				glColor3f((GLfloat)type < 2, 0, (GLfloat)type>0);
-				glVertex2d(spines[i * 4], spines[i * 4 + 1]);
-				glVertex2d(spines[i * 4 + 2], spines[i * 4 + 3]);
-			}
-			glEnd();
+			
 
 			//draw edges
 			glLineWidth(2);
 			GL_handler.draw_by_array(GL_LINES, 
-				polyTo3D.getPointerToEdges(),
-				polyTo3D.getEdgeNum() * 2,
+				polyTo3D.getPointerToEdges(show2DMode),
+				polyTo3D.getEdgeNum(show2DMode) * 2,
 				0, 1, 0);
+
+			if (showConst) {
+				GL_handler.draw_by_array(GL_LINES,
+					polyTo3D.getPointerToEdges(0),
+					polyTo3D.getEdgeNum(0) * 2,
+					1, 0, 0);
+			}
+
+			//draw spines
+			if (show2DMode > 1 && showSpine) {
+				glLineWidth(3);
+				GL_handler.draw_by_array(GL_LINES,
+					polyTo3D.getPointerToSpines(show2DMode - 2 - (show2DMode==4)),
+					polyTo3D.getSpineNum(show2DMode - 2 - (show2DMode==4)) * 2,
+					1, 0, 0);
+			}
 
 			//draw points
 			glPointSize(8);
 			GL_handler.draw_by_array(GL_POINTS,
-				polyTo3D.getPointerToPoints2D(),
-				polyTo3D.getPoint2DNum(),
-				0, 0, 1);
+				polyTo3D.getPointerToPoints2D(show2DMode),
+				polyTo3D.getPoint2DNum(show2DMode*(show2DMode!=3)),
+				0, 0, darkMode);
 		}
 
 		if (showNormal) {
@@ -325,6 +349,62 @@ void disp(void) {
 	}
 }
 
+
+sketch3D::CDTsolver cdt(&directedGraph);
+double test_p[49*2];
+size_t test_p_num=49;
+size_t constraint[4] = { 8,26,31,36 };
+size_t constNum = 2;
+bool useconst = true;
+void test() {
+	std::srand(0);
+
+	for (int x = 0; x < 7; x++) {
+		for (int y = 0; y < 7; y++) {
+			test_p[(x * 7 + y)*2] = (x - 3.0 + (std::rand() % 100 - 50.0) * 0.01) * 0.25;
+			test_p[(x * 7 + y)*2+1] = (y - 3.0 + (std::rand() % 100 - 50.0) * 0.01) * 0.25;
+		}
+	}
+	cdt.init();
+	if (useconst) {
+		cdt.defineProblem(test_p, test_p_num, constraint, constNum);
+	}
+	else {
+		cdt.defineProblem(test_p, test_p_num, nullptr, 0);
+	}
+	cdt.solve();
+}
+
+void testdisp() {
+	//clear buffer
+	glClearColor(1, 1, 1, 0);
+	glClear(GL_COLOR_BUFFER_BIT);
+	size_t edgeNum = cdt.getEdgeNum();
+	double* edges = new double[edgeNum*4];
+	cdt.getPointsEdgesAsCoords(test_p, edges);
+	glLineWidth(2);
+	/*
+	GL_handler.draw_by_array(GL_LINES,
+		edges,
+		edgeNum * 2,
+		0, 1, 0);*/
+	if (useconst) {
+		glLineWidth(3);
+		glColor3f(1, 0, 0);
+		glBegin(GL_LINES);
+		graph::point* p;
+		for (size_t i = 0; i < constNum*2; i++) {
+			p = directedGraph.getPoint(constraint[i]);
+			glVertex2d(p->getX(), p->getY());
+		}
+		glEnd();
+	}
+	glPointSize(8);
+	GL_handler.draw_by_array(GL_POINTS, test_p, test_p_num, 0,0,0);
+	glFinish();
+	delete[] edges;
+}
+
 int main(int argc, char** argv) {
 	//make log directory
 	if (fileUtils::mkdir(LOG_DIR)<0) { printf("ERROR: mkdir fail (%s)\n", LOG_DIR); };
@@ -332,15 +412,28 @@ int main(int argc, char** argv) {
 	//initialize
 	printf("2Dpoly_to_3D version:%s\n", VERSION);
 	char window_name[] = "2Dpoly_to_3D";
-	GL_handler.init(argc, argv, window_name, width, height);
-	openglHandler::connectPolyTo3D(&polyTo3D);	
-	glutDisplayFunc(disp);
-	glutMouseFunc(mouse);
-	glutPassiveMotionFunc(passivemotion);
-	glutMotionFunc(motion);
-	glutTimerFunc(10, redisp, 0);
-	openglHandler::menuInit();
 
+	if (false) {
+		glutInit(&argc, argv);
+		glutInitWindowPosition(100, 50);
+		glutInitWindowSize(width, height);
+		glutInitDisplayMode(GLUT_SINGLE | GLUT_RGBA);
+
+		glutCreateWindow(window_name);
+		
+		test();
+		glutDisplayFunc(testdisp);
+	}
+	else{
+		GL_handler.init(argc, argv, window_name, width, height);
+		openglHandler::connectPolyTo3D(&polyTo3D);
+		glutDisplayFunc(disp);
+		glutMouseFunc(mouse);
+		glutPassiveMotionFunc(passivemotion);
+		glutMotionFunc(motion);
+		glutTimerFunc(10, redisp, 0);
+		openglHandler::menuInit();
+	}
 	//main loop
 	glutMainLoop();
 

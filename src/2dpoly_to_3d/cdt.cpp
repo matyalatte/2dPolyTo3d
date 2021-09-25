@@ -5,9 +5,8 @@
  *
  * See cdt.hpp for documentation of each member.
  *
- * @author Matyalatte
- * @version 2021/09/14
- * - initial commit
+ * Author: Matyalatte
+ * Last updated: 2021/09/25
  */
 
 #include "cdt.hpp"
@@ -189,13 +188,24 @@ namespace sketch3D {
 		for (size_t i = 0; i < constNum * 2; i++) {
 			constEdges[i] = getPoint(constraints[i]);
 		}
+		for (size_t i = 0; i < constNum; i++) {
+			directedGraph->addEdge(constraints[i*2], constraints[i*2+1]);
+		}
 
+	}
+
+	void CDTsolver::deleteAllEdges() {
+		size_t size = getEdgeNum();
+		for (size_t i = 0; i < size; i++) {
+			directedGraph->deleteEdge(0);
+		}
 	}
 
 	void CDTsolver::solve() {
 
 		if (step != 2) throw graph::graphException("CDTsolver","solve : define a problem with 'defineProblem()' before solving");
 		step = 3;
+		deleteAllEdges();
 
 		addSuperTriangle();
 
@@ -215,7 +225,6 @@ namespace sketch3D {
 
 		std::queue<graph::edge*>* edgeQueue = new std::queue<graph::edge*>();
 		graph::point* p1, * p2;
-
 		//flip edges to meet constraints
 		for (size_t i = 0; i < constEdges.size() / 2; i++) {
 			p1 = constEdges[i * 2];

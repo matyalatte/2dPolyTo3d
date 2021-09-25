@@ -10,9 +10,9 @@
 
 namespace sketch3D {
 
-	spineEstimator::spineEstimator(graph::graph* graph) 
+	spineEstimator::spineEstimator(graph::graph* graph)
 		:baseGraphHandler(graph, "spineEstimator"),
-		 spines(),pointNum(0){}
+		spines(), pointNum(0) {}
 
 	spineEstimator::~spineEstimator() {
 		for (size_t i = 0; i < getSpineNum(); i++) {
@@ -21,7 +21,7 @@ namespace sketch3D {
 	}
 
 	void spineEstimator::addSpine(graph::edge* e1, graph::edge* e2, graph::point* p1, graph::point* p2) {
-		spines.push_back(new spine(e1,e2,p1,p2));
+		spines.push_back(new spine(e1, e2, p1, p2));
 	}
 
 	void spineEstimator::init() {
@@ -38,7 +38,7 @@ namespace sketch3D {
 	* @-----@=======@----@
 	*       |
 	*       |
-	* 
+	*
 	*/
 	void spineEstimator::deleteExternalEdge() {
 		double maxX = directedGraph->getMaxX();
@@ -79,8 +79,8 @@ namespace sketch3D {
 				double p3x = p3->getX();
 				double p3y = p3->getY();
 				if (p3y == mid->getY() && mid->getX() <= p3x && p3x <= end->getX()) {
-					double y=getPoint(((int)j - 1 + point_size) % point_size)->getY();
-					if ((p4->getY()-p3y)*(y-p3y)<0) count += 1;
+					double y = getPoint(((int)j - 1 + point_size) % point_size)->getY();
+					if ((p4->getY() - p3y) * (y - p3y) < 0) count += 1;
 				}
 			}
 			if (count % 2 == 0) setFlagToFace(e);//edge e is external!
@@ -94,23 +94,23 @@ namespace sketch3D {
 	}
 
 	//generate spines
-	void spineEstimator::genSpineFromChordalAxis(graph::edge* e, graph::point* p,spine* s) {
-		graph::edge* prev=e->getPrevEdge();
-		graph::edge* next=prev->getPrevEdge();
+	void spineEstimator::genSpineFromChordalAxisRec(graph::edge* e, graph::point* p, spine* s) {
+		graph::edge* prev = e->getPrevEdge();
+		graph::edge* next = prev->getPrevEdge();
 		graph::edge* pair = e->getPairEdge();
 
 		if (pair == nullptr) {//outer edge
-			if (p == nullptr) genSpineFromChordalAxis(prev);
+			if (p == nullptr) genSpineFromChordalAxisRec(prev);
 			return;
 		}
 
 		graph::point* mid;
 
-		if (p == nullptr){
-			mid = e->getMidPoint(true);
-			directedGraph->addPointObject(mid);		
+		if (p == nullptr) {
+			mid = e->getMidPoint();
+			directedGraph->addPointObject(mid);
 		}
-		else{
+		else {
 			mid = p;
 		}
 		graph::point* p3;
@@ -130,18 +130,18 @@ namespace sketch3D {
 			spine* s2, * s3;
 
 			//gen joint spine
-			p3 = e->getCenterPoint(true);
+			p3 = e->getCenterPoint();
 			addPointObject(p3);
 			addSpine(nullptr, e, p3, mid);
 			newS = getLastSpine();
 			if (s != nullptr) connectSpine(s, newS);
 
-			mid2 = prev->getMidPoint(true);
+			mid2 = prev->getMidPoint();
 			addPointObject(mid2);
 			addSpine(nullptr, prev, p3, mid2);
 			s2 = getLastSpine();
 
-			mid3 = next->getMidPoint(true);
+			mid3 = next->getMidPoint();
 			addPointObject(mid3);
 			addSpine(nullptr, next, p3, mid3);
 			s3 = getLastSpine();
@@ -151,8 +151,8 @@ namespace sketch3D {
 			s3->setSpine(newS);
 			s3->setSpine(s2, 2);
 
-			genSpineFromChordalAxis(prev->getPairEdge(), mid2, s2);
-			genSpineFromChordalAxis(next->getPairEdge(), mid3, s3);
+			genSpineFromChordalAxisRec(prev->getPairEdge(), mid2, s2);
+			genSpineFromChordalAxisRec(next->getPairEdge(), mid3, s3);
 
 			directedGraph->insertPoint(p3, e);
 		}
@@ -165,17 +165,22 @@ namespace sketch3D {
 			else {
 				e2 = prev;
 			}
-			p3 = e2->getMidPoint(true);
+			p3 = e2->getMidPoint();
 			addPointObject(p3);
 			addSpine(e, e2, mid, p3);
 			newS = getLastSpine();
 			if (s != nullptr) connectSpine(s, newS);
-			genSpineFromChordalAxis(e2->getPairEdge(), p3, newS);
+			genSpineFromChordalAxisRec(e2->getPairEdge(), p3, newS);
 		}
 		if (p == nullptr) {
-			genSpineFromChordalAxis(pair, mid, newS);
+			genSpineFromChordalAxisRec(pair, mid, newS);
 		}
 	}
+
+	void spineEstimator::genSpineFromChordalAxis() {
+		genSpineFromChordalAxisRec(getEdge(0));
+	}
+
 
 	void spineEstimator::genFanTriangle(graph::point* p1, graph::point* p2, graph::point* center, size_t pnum, graph::edge* se_prev, graph::edge* se_next) {
 		
@@ -216,7 +221,7 @@ namespace sketch3D {
 		}
 	}
 
-	void spineEstimator::genFanTriangleRec(graph::edge* e, std::vector<graph::point*>& pvec, spine* s, spine* preS) {
+	void spineEstimator::genFanTriangleRec(graph::edge* e, std::vector<graph::point*>& pvec, spine* s, spine* preS, bool end) {
 
 		//if s is joint then generate fan triangle
 		if (s->getType() == SPINE_TYPE_JOINT) {
@@ -248,6 +253,34 @@ namespace sketch3D {
 		pvec.push_back(p3);
 
 		graph::point* p;
+		if (end) {
+			graph::edge* e2;
+			graph::point* s_p2;
+			if (s->getE1() == e) { e2 = s->getE2(); p = s->getP2(); s_p2 = s->getP1(); }
+			else {
+				if (s->getE2() == nullptr) throw graph::graphException("spineEstimator", "genFanTriangleRec: unexpected edge detected");
+				p = s->getP1();
+				e2 = s->getE1();
+				s_p2 = s->getP2();
+			}
+
+			p1 = e2->getP1();
+			p2 = e2->getP2();
+			pair = e2->getPairEdge();
+			if (p->getID() < pointNum) throw graph::graphException("spineEstimator", "genFanTriangleRec: unexpected point index detected");
+
+			pair->setPairEdge(nullptr);
+			e2->setPairEdge(nullptr);
+
+			directedGraph->insertPoint2(p, e2);
+			size_t edgeNum = getEdgeNum();
+
+			genFanTriangle(p1, p2, p, pvec.size(), e2, getEdge(edgeNum - 2));
+
+			s->changeToJoint(p, e, s_p2);
+			return;
+		}
+
 		for (size_t i = 0; i < pvec.size(); i++) {
 			p = pvec[i];
 			if (!isInCircle(p, p1, p2)) {
@@ -260,38 +293,14 @@ namespace sketch3D {
 				s->setFlag(true);
 				return;
 			}
-			graph::edge* e2;
-			graph::point* s_p2;
-			if (s->getE1() == e) { e2 = s->getE2(); p = s->getP2(); s_p2 = s->getP1(); }
-			else {
-				if (s->getE2() == nullptr) throw graph::graphException("spineEstimator", "genFanTriangleRec: unexpected edge detected");
-				p = s->getP1();
-				e2 = s->getE1();
-				s_p2 = s->getP2();
-			}
-			
-			p1 = e2->getP1();
-			p2 = e2->getP2();
-			pair = e2->getPairEdge();
-			if (p->getID() < pointNum) throw graph::graphException("spineEstimator", "genFanTriangleRec: unexpected point index detected");
-
-			pair->setPairEdge(nullptr);
-			e2->setPairEdge(nullptr);
-
-			directedGraph->insertPoint2(p, e2);
-			size_t edgeNum = getEdgeNum();
-
-			genFanTriangle(p1, p2, p, pvec.size(),e2,getEdge(edgeNum-2));
-			
-			s->changeToJoint(p,e, s_p2);
-			return;
+			end = true;
 		}
 		s->setFlag(true);
 
 		setFlagToFace(e);
 		spine* s2 = s->getOppositeSpine(preS);
 		graph::edge* e2 = s2->getOppositeEdge(pair);
-		genFanTriangleRec(e2, pvec, s2, s);
+		genFanTriangleRec(e2, pvec, s2, s, end);
 	}
 
 	void spineEstimator::searchSpineToGenFan() {
@@ -397,13 +406,9 @@ namespace sketch3D {
 
 	}
 
-	void spineEstimator::estimateSpine() {
-		init();
-		deleteExternalEdge();
-		genSpineFromChordalAxis(getEdge(0));
+	void spineEstimator::cutSpine() {
 		searchSpineToGenFan();
 		deleteUnusedPoint();
-		splitFaceBySpine();
 	}
 
 	void spineEstimator::getSpinesAsCoords(double* spine_coords) {

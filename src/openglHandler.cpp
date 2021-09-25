@@ -5,9 +5,8 @@
  *
  * See openglHandler.hpp for documentation of each member.
  *
- * @author Matyalatte
- * @version 2021/09/14
- * - initial commit
+ * Author: Matyalatte
+ * Last updated: 2021/09/25
  */
 
 #include "openglHandler.hpp"
@@ -318,5 +317,85 @@ namespace openglHandler {
 	void openglHandler::setLightPos(float x, float y, float z) {
 		GLfloat pos[3] = { x,y,z };
 		setUniformVec(lightPosID, 3, pos);
+	}
+
+	void CreateBitmap(const char* filepath, const int width, const int height, BYTE* pixels)
+	{
+		std::ofstream writer;
+		int bitcount = 8 * 3;        
+		try
+		{
+			int count = (width * height * (bitcount / 8));    // ピクセル数(4バイト×画素数)
+			int filesize = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + count;
+			
+			
+			//info header
+			BITMAPINFOHEADER infoheader;
+			::memset(&infoheader, 0, sizeof(BITMAPINFOHEADER));
+			infoheader.biSize = sizeof(BITMAPINFOHEADER);
+			infoheader.biWidth = width;
+			infoheader.biHeight = height;
+			infoheader.biPlanes = 1;
+			infoheader.biBitCount = bitcount;
+			infoheader.biCompression = BI_RGB;
+			infoheader.biSizeImage = (width * height * (bitcount / 8));
+			infoheader.biXPelsPerMeter = 0;
+			infoheader.biYPelsPerMeter = 0;
+			infoheader.biClrUsed = 0;
+			infoheader.biClrImportant = 0;
+			
+			//file headler
+			BITMAPFILEHEADER fileheader;
+			::memset(&fileheader, 0, sizeof(BITMAPFILEHEADER));
+			fileheader.bfType = ('M' << 8) | 'B';
+			fileheader.bfSize = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + infoheader.biSizeImage;
+			fileheader.bfReserved1 = 0;
+			fileheader.bfReserved2 = 0;
+			fileheader.bfOffBits = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER);
+
+			writer = std::ofstream(filepath, std::ios::out | std::ios::trunc | std::ios::binary);
+			if (!writer.is_open())
+			{
+				throw new std::exception("ファイルの作成に失敗しました...");
+			}
+
+			writer.write((char*)&fileheader, sizeof(BITMAPFILEHEADER));
+			writer.write((char*)&infoheader, sizeof(BITMAPINFOHEADER));
+			BYTE padding[4] = {0,0,0,0};
+			for (int i = 0; i < height; ++i) {
+				writer.write((const char*)&pixels[width * i*3], width*3);
+				if ((width*3) % 4 != 0) {//padding
+					writer.write((const char*)&padding[0], 4 - ((width*3) % 4));
+				}
+			}
+		}
+		catch (const std::exception& ex)
+		{
+			printf(ex.what());
+			if (writer.is_open())
+			{
+				writer.close();
+			}
+			throw ex;
+		}
+		if (writer.is_open())
+		{
+			writer.close();
+		}
+	}
+
+	void openglHandler::takeScreenShot() {
+		GLsizei width = glutGet(GLUT_WINDOW_WIDTH);
+		GLsizei height = glutGet(GLUT_WINDOW_HEIGHT);
+		BYTE* pixels = new BYTE[3 * (size_t)width * (size_t)height];
+		glReadPixels(0, 0, width, height, GL_BGR, GL_UNSIGNED_BYTE, pixels);
+
+		fileUtils::mkdir("screenshot");
+		std::string file_name = "screenshot/screenshot" + stringUtils::getTime() + ".bmp";
+
+		CreateBitmap(file_name.c_str(), (int)width, (int)height, pixels);
+		
+		printf("screen saved to %s", file_name.c_str());
+		delete[] pixels;
 	}
 }

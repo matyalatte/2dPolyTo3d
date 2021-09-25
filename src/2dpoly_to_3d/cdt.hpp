@@ -5,9 +5,8 @@
  *
  * See cdt.cpp for implementation of each member.
  *
- * @author Matyalatte
- * @version 2021/09/14
- * - initial commit
+ * Author: Matyalatte
+ * Last updated: 2021/09/25
  */
 
 #pragma once
@@ -43,6 +42,8 @@ namespace sketch3D {
 		//checks delaunay constraints
 		void checkEdgeFlip(std::stack<graph::edge*>* edgeStack);
 		
+		void deleteAllEdges();
+
 		//creates a super triangle to graph
 		void addSuperTriangle();
 
@@ -106,5 +107,6 @@ namespace sketch3D {
 
 		//size_t getPointNum();// directedGraph.points.size()
 		//size_t getEdgeNum();// directedGraph.edges.size()
+
 	};
 }

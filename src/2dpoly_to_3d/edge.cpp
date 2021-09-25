@@ -5,9 +5,8 @@
  *
  * See edge.hpp for documentation of each member.
  *
- * @author Matyalatte
- * @version 2021/09/14
- * - initial commit
+ * Author: Matyalatte
+ * Last updated: 2021/09/25
  */
 
 #include "edge.hpp"
@@ -98,11 +97,11 @@ namespace graph {
 		return flag;
 	}
 
-	point* edge::getMidPoint(bool calZ) {
-		return mid(p1, p2, calZ);
+	point* edge::getMidPoint() {
+		return mid(p1, p2);
 	}
-	point* edge::getCenterPoint(bool calZ) {
-		return center(p1, p2, getP3(), calZ);
+	point* edge::getCenterPoint() {
+		return center(p1, p2, getP3());
 	}
 
 	void edge::printIDs() {

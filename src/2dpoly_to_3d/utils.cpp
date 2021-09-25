@@ -1,9 +1,8 @@
 /*
  * File: utils.cpp
  * --------------------
- * @author Matyalatte
- * @version 2021/09/1
- * - initial commit
+ * Author: Matyalatte
+ * Last updated: 2021/09/25
  */
 
 #include "utils.hpp"
@@ -229,4 +228,5 @@ namespace stringUtils{
 		std::string str(buffer);
 		return str;
 	}
+
 }

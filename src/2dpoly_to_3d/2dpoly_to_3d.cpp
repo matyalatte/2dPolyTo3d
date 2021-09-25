@@ -4,9 +4,8 @@
  * 
  * See 2dpoly_to_3d.hpp for documentation of each member.
  * 
- * @author Matyalatte
- * @version 2021/09/14
- * - initial commit
+ * Author: Matyalatte
+ * Last updated: 2021/09/25
  */
 
 #include "2dpoly_to_3d.hpp"
@@ -21,13 +20,24 @@ namespace sketch3D {
 		points3D(),faces(),
 		pointNormal(),
 		points2D(), edges(),
-		point2DNum(), edgeNum(),inputPointNum(0)
+		point2DNum(), edgeNum(),inputPointNum(0),
+		spines(),spineNum()
 	{
 	}
 
 	poly_to_3D::~poly_to_3D() {
-		delete[] points2D;
-		delete[] edges;
+		delete[] points2D[0];
+		delete[] points2D[1];
+		delete[] points2D[2];
+		delete[] points2D[3];
+		delete[] points2D[4];
+		delete[] edges[0];
+		delete[] edges[1];
+		delete[] edges[2];
+		delete[] edges[3];
+		delete[] edges[4];
+		delete[] spines[0];
+		delete[] spines[1];
 
 		delete[] points3D;
 		delete[] pointNormal;
@@ -49,25 +59,37 @@ namespace sketch3D {
 		}
 		init();
 		inputPointNum = pointNum;
-		delete[] points2D;
-		points2D = new double[inputPointNum * 2];
-		memmove(points2D, point_coords, sizeof(double) * inputPointNum * 2);
+		delete[] points2D[0];
+		points2D[0] = new double[inputPointNum * 2];
+		memmove(points2D[0], point_coords, sizeof(double) * inputPointNum * 2);
 		size_t* constraints = new size_t[pointNum * 2];
 		for (size_t i = 0; i < pointNum; i++) {
 			constraints[i * 2] = i;
 			constraints[i * 2 + 1] = (i < pointNum - 1) ? i + 1 : 0;
 		}
 		cdt.defineProblem(point_coords, pointNum, constraints, pointNum);
+		store2DPolyData(0);
 		cdt.solve();
-		cdt.checkAllConstraintEdgeExist(cdt.getPointNum());
+		//cdt.checkAllConstraintEdgeExist(cdt.getPointNum());
+		store2DPolyData(1);
 		delete[] constraints;
-		spineEstimator.estimateSpine();
-		
+		spineEstimator.init();
+		spineEstimator.deleteExternalEdge();
+		store2DPolyData(2);
+		spineEstimator.genSpineFromChordalAxis();
+		storeSpineData(0);
+		spineEstimator.cutSpine();
+		storeSpineData(1);
+		store2DPolyData(3);
+
+		spineEstimator.splitFaceBySpine();
 		//modeler.checkEdgePair();
 		
-		store2DPolyData();
+		store2DPolyData(4);
 
 		modeler.smoothing(pointNum);
+		//store2DPolyData(4);
+
 		modeler.graphTo3D(pointNum);
 		//modeler.checkDuplicatePoint();
 		//modeler.checkDuplicateEdge();
@@ -75,47 +97,48 @@ namespace sketch3D {
 	}
 
 	//get spine data
-
-	int poly_to_3D::getSpineType(size_t i) {
-		return spineEstimator.getSpineType(i);
+	void poly_to_3D::storeSpineData(size_t id) {
+		delete[] spines[id];
+		spineNum[id] = spineEstimator.getSpineNum();
+		spines[id] = new double[spineNum[id] * 4];
+		spineEstimator.getSpinesAsCoords(spines[id]);
 	}
 
-	size_t poly_to_3D::getSpineNum() {
-		return spineEstimator.getSpineNum();
+	size_t poly_to_3D::getSpineNum(size_t id) {
+		return spineNum[id];
 	}
 
-	void poly_to_3D::getSpinesAsCoords(double* spine_coords) {
-		spineEstimator.getSpinesAsCoords(spine_coords);
+	double* poly_to_3D::getPointerToSpines(size_t id) {
+		return spines[id];
 	}
 
 
 	//get 2D polygon data
 
-	void poly_to_3D::store2DPolyData() {
-		point2DNum = directedGraph->getPointNum();
-		edgeNum = directedGraph->getEdgeNum();
+	void poly_to_3D::store2DPolyData(size_t id) {
+		point2DNum[id] = directedGraph->getPointNum();
+		edgeNum[id]= directedGraph->getEdgeNum();
 
-		delete[] points2D;
-		delete[] edges;
+		delete[] points2D[id];
+		delete[] edges[id];
 
-		points2D = new double[point2DNum * 2];
-		edges = new double[edgeNum * 4];
+		points2D[id] = new double[point2DNum[id] * 2];
+		edges[id] = new double[edgeNum[id] * 4];
 
-		directedGraph->getPointsEdgesAsCoords(points2D, edges);
-
+		directedGraph->getPointsEdgesAsCoords(points2D[id], edges[id]);
 	}
 
-	double* poly_to_3D::getPointerToPoints2D() {
-		return points2D;
+	double* poly_to_3D::getPointerToPoints2D(size_t id) {
+		return points2D[id];
 	}
-	size_t poly_to_3D::getPoint2DNum() {
-		return point2DNum;
+	size_t poly_to_3D::getPoint2DNum(size_t id) {
+		return point2DNum[id];
 	}
-	double* poly_to_3D::getPointerToEdges() {
-		return edges;
+	double* poly_to_3D::getPointerToEdges(size_t id) {
+		return edges[id];
 	}
-	size_t poly_to_3D::getEdgeNum() {
-		return edgeNum;
+	size_t poly_to_3D::getEdgeNum(size_t id) {
+		return edgeNum[id];
 	}
 
 	//get 3D model data
@@ -179,7 +202,7 @@ namespace sketch3D {
 		if (inputPointNum != 0) {
 			std::string str(desc);
 			str = "type:stroke\ndesc:" + str + "\n"
-				+ stringUtils::array_to_string(points2D, inputPointNum * 2, 8);
+				+ stringUtils::array_to_string(points2D[0], inputPointNum * 2, 8);
 			fileUtils::write_txt(file_path, str);
 			return true;
 		}
@@ -189,7 +212,7 @@ namespace sketch3D {
 		if (inputPointNum != 0) {
 			std::string str(desc);
 			str = "type:stroke\ndesc:" + str + "\n" 
-				+ stringUtils::array_to_string(points2D, inputPointNum*2, 8);
+				+ stringUtils::array_to_string(points2D[0], inputPointNum*2, 8);
 			fileUtils::write_txt(file_path, str);
 			return true;
 		}

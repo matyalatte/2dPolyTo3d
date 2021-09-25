@@ -5,9 +5,8 @@
  * 
  * See baseGraphHandler.hpp for documentation of each member.
  * 
- * @author Matyalatte
- * @version 2021/09/14
- * - initial commit
+ * Author: Matyalatte
+ * Last updated: 2021/09/14
  */
 
 #include "baseGraphHandler.hpp"
