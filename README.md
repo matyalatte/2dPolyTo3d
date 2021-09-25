@@ -34,7 +34,7 @@ ACM SIGGRAPH 99, 1999. ](https://www-ui.is.s.u-tokyo.ac.jp/~takeo/papers/siggrap
 - Export as .stroke: 3Dモデルの生成に用いた多角形を[独自形式](https://github.com/matyalatte/2dPolyTo3d/wiki/.stroke%E5%BD%A2%E5%BC%8F%E3%81%AB%E3%81%A4%E3%81%84%E3%81%A6)で出力します。
 - Import as .stroke: .stroke形式で保存された多角形から3Dモデルを生成します。
 - Show/Hide Normal: 頂点法線ベクトルを表示/非表示します。
-- Show/Hide 2D Polygon: ボーン推定終了時の頂点、辺、ボーンを表示/非表示します。
+- Show/Hide 2D Polygon: 2Dメッシュと中心線を表示/非表示します。
 - Show/Hide Model: 3Dモデルを表示/非表示します
 - EXIT: アプリを終了します。
 
